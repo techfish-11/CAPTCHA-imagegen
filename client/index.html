@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #captcha-container {
+            margin-bottom: 20px;
+        }
+
+        img {
+            border: 1px solid #ccc;
+        }
+
+        #captcha-answer {
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>CAPTCHA Test</h1>
+<div>
+    <label for="difficulty">Select Difficulty: </label>
+    <select id="difficulty" onchange="reloadCaptcha()">
+        <option value="1">1 - Easy</option>
+        <option value="5">5 - Medium</option>
+        <option value="10" selected>10 - Hard</option>
+        <option value="100">100 - Oni Mode (鬼モード)</option>
+    </select>
+</div>
+
+<div id="captcha-container">
+    <h3>Captcha Image</h3>
+    <img id="captcha-img" src="" alt="Captcha Image" width="350" height="120">
+</div>
+
+<div>
+    <input type="text" id="captcha-input" placeholder="Enter the text above" />
+    <button onclick="validateCaptcha()">Submit</button>
+</div>
+
+<div id="captcha-answer" style="margin-top: 20px;"></div>
+
+<p>endpoint(例) : https://captcha.evex.land/api/captcha?difficulty=2</p>
+
+<script>
+    let correctAnswer = '';
+
+    function loadCaptcha(difficulty = 10) {
+        fetch(`/api/captcha?difficulty=${difficulty}`)
+            .then(response => response.json())
+            .then(data => {
+                const captchaImg = document.getElementById('captcha-img');
+                captchaImg.src = data.image;
+                correctAnswer = data.answer;
+                document.getElementById('captcha-answer').innerText = '';
+            })
+            .catch(error => {
+                console.error('Error fetching CAPTCHA:', error);
+            });
+    }
+
+    function validateCaptcha() {
+        const userInput = document.getElementById('captcha-input').value.trim();
+
+        if (userInput === correctAnswer) {
+            document.getElementById('captcha-answer').innerText = 'Correct!';
+            document.getElementById('captcha-answer').style.color = 'green';
+        } else {
+            document.getElementById('captcha-answer').innerText = 'Incorrect, please try again.';
+            document.getElementById('captcha-answer').style.color = 'red';
+        }
+    }
+
+    function reloadCaptcha() {
+        const difficulty = parseInt(document.getElementById('difficulty').value);
+        loadCaptcha(difficulty);
+    }
+
+    loadCaptcha();
+</script>
+
+</body>
+</html>
